@@ -5,6 +5,8 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io' show File, Platform;
 import 'package:http/http.dart' as http;
 import 'package:rxdart/subjects.dart';
+import 'package:tts_with_local_notif/DbConnect.dart';
+import 'package:tts_with_local_notif/model/Event.dart';
 class NotificationPlugin {
   //
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -146,7 +148,51 @@ class NotificationPlugin {
     );
   }
   Future<void> scheduleNotification() async {
+    List<Event> wholeschedule=await DbConnect.instance.fetchEvents();
+    for(Event e in wholeschedule) {
+      String strtime=e.fromdate;
+      var scheduleNotificationDateTime =Event().stringToDatetime(strtime);
+      print("#####" + scheduleNotificationDateTime.toString());
+      var androidChannelSpecifics = AndroidNotificationDetails(
+        'CHANNEL_ID 1',
+        'CHANNEL_NAME 1',
+        "CHANNEL_DESCRIPTION 1",
+        icon: "@mipmap/logo_icon",
+        //sound: RawResourceAndroidNotificationSound('my_sound'),
+        largeIcon: DrawableResourceAndroidBitmap("@mipmap/logo_icon"),
+        enableLights: true,
+        color: const Color.fromARGB(255, 255, 0, 0),
+        ledColor: const Color.fromARGB(255, 255, 0, 0),
+        ledOnMs: 1000,
+        ledOffMs: 500,
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        timeoutAfter: 5000,
+        styleInformation: DefaultStyleInformation(true, true),
+      );
+      var iosChannelSpecifics = IOSNotificationDetails(
+        sound: 'my_sound.aiff',
+      );
+      var platformChannelSpecifics = NotificationDetails(
+        android: androidChannelSpecifics,
+        iOS: iosChannelSpecifics,
+      );
+      await flutterLocalNotificationsPlugin.schedule(
+        0,
+        e.eventname,
+        e.fromdate,
+        scheduleNotificationDateTime,
+        platformChannelSpecifics,
+        payload: 'Test Payload',
+      );
+    }
+  }
+  /*
+   Future<void> scheduleNotification() async {
+
     var scheduleNotificationDateTime = DateTime.now().add(Duration(seconds: 5));
+    print("#####"+scheduleNotificationDateTime.toString());
     var androidChannelSpecifics = AndroidNotificationDetails(
       'CHANNEL_ID 1',
       'CHANNEL_NAME 1',
@@ -181,6 +227,8 @@ class NotificationPlugin {
       payload: 'Test Payload',
     );
   }
+
+  */
   Future<void> showNotificationWithAttachment() async {
     var attachmentPicturePath = await _downloadAndSaveFile(
         'https://via.placeholder.com/800x200', 'attachment_img.jpg');
