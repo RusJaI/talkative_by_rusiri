@@ -52,7 +52,7 @@ class DbConnect{
   Future<List<Event>> fetchEvents() async {
     Database db = await database;
     List<Map> events = await db.query(Event.tblEvents);
-    // print("events : "+events.toString());
+    print("events : "+events.toString());
     return events.length == 0
         ? []
         : events.map((x) => Event.fromMap(x)).toList();

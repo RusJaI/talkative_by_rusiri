@@ -35,7 +35,7 @@ class Event {
     return map;
   }
 
-  DateTime stringToDatetime(String str){
+  static DateTime stringToDatetime(String str){
     var dateTimeObj = new DateFormat("yyyy-MM-dd HH:mm:ss").parse(
         str + ":00.000000");
     print("Converted at model##"+dateTimeObj.toString());

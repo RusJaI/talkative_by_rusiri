@@ -54,6 +54,8 @@ class AddEventState extends State<AddEvent>{
 
   @override
   Widget build(BuildContext context) {
+    String dropdownValue = "No Repeat-Only Once";
+
     return Scaffold(
         appBar: AppBar(
             title: Text("Add New Event")
@@ -121,31 +123,37 @@ class AddEventState extends State<AddEvent>{
                                 },
                                 //onSaved: (val) => print(val),
                               ),
-                                  DateTimePicker(
-                                    type: DateTimePickerType.dateTimeSeparate,
-                                    dateMask: 'd MMM, yyyy',
-                                    initialValue: DateTime(year,month,day).toString(),
-                                    firstDate: DateTime(2000),
-                                    lastDate: DateTime(2100),
-                                    icon: Icon(Icons.event),
-                                    dateLabelText: 'Date',
-                                    timeLabelText: "Time",
-                                    onChanged: (val) =>  {
-                                      //print(val),
-                                      this.setState(() {
-                                        todate=val;
-                                        is_todatechanged=true;
-                                      })
-                                    },
-                                    validator: (val) {
-                                     // print(val);
-                                     /* if(fromdate==todate){
-                                        return "Please enter a valid time range";
-                                      }*/
-                                      return null;
-                                    },
-                                   // onSaved: (val) => print(val),
-                                  ),
+                                 Container(
+                                   padding: EdgeInsets.only(left: 10.0,top: 20.0,right: 5.0,bottom: 5.0),
+                                   child: DropdownButton<String>(
+                                     value: dropdownValue,
+                                     icon: const Icon(Icons.arrow_downward),
+                                     iconSize: 34,
+                                     elevation: 26,
+                                     focusColor: Colors.lightBlue,
+                                     style: const TextStyle(
+                                         color: Colors.blueGrey,
+                                          fontSize: 20.0
+                                     ),
+                                     underline: Container(
+                                       height: 2,
+                                       color: Colors.indigo[900],
+                                     ),
+                                     onChanged: (String newValue) {
+                                       setState(() {
+                                         dropdownValue = newValue;
+                                       });
+                                     },
+                                     items: <String>['No Repeat-Only Once', 'Repeat Daily', 'Repeat for WeekDays']
+                                         .map<DropdownMenuItem<String>>((String value) {
+                                       return DropdownMenuItem<String>(
+                                         value: value,
+                                         child: Text(value),
+                                       );
+                                     }).toList(),
+                                   ),
+                                 )
+
                                 ],
                               ),
             padding: EdgeInsets.only(left: 8.0,right: 8.0,top: 20.0,bottom: 65.0),
@@ -180,7 +188,7 @@ class AddEventState extends State<AddEvent>{
 
   void addeventtodb(){
     if(!is_todatechanged){
-      todate=DateTime.parse(fromdate).add(Duration(minutes: 15)).toString();
+      todate=DateTime.parse(fromdate).add(Duration(minutes: 1)).toString();
     }
      print("before insert : "+eventnameController.text+" "+fromdate+" "+todate+" "+repeat.toString());
     Event event= new Event(eventname: eventnameController.text,fromdate: fromdate,todate: todate,repeat: repeat);

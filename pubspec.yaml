@@ -38,6 +38,7 @@ dependencies:
   intl: ^0.17.0
   date_time_picker: ^2.0.0
   table_calendar: ^3.0.0
+  flutter_tts: ^3.0.0
 
 dev_dependencies:
   flutter_test:

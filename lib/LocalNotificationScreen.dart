@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:tts_with_local_notif/DbConnect.dart';
 import 'package:tts_with_local_notif/NotificationPlugin.dart';
+import 'package:tts_with_local_notif/model/Event.dart';
 
 class LocalNotificationScreen extends StatefulWidget{
   @override
@@ -16,21 +18,45 @@ class LocalNotificationScreen extends StatefulWidget{
     notificationPlugin.setListenerForLowerVersions(onNotificationInLowerVersions);
     notificationPlugin.setOnNotificationClick(onNotificationClick);
   }
+  DbConnect dbConnect=DbConnect.instance;
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
-        title:Text("Local Notification Screen"),
+        title:Text("Your Planned Tasks"),
       ),
-      body: Center(
-        child: FloatingActionButton.extended(
-            onPressed:()async{
-              await notificationPlugin.showNotification();
-              await notificationPlugin.scheduleNotification();
-            },
-            label: Text("Send Notification")
-        ),
+      body: FutureBuilder(
+        future: dbConnect.fetchEvents(),
+        builder: (context, snapshot) {
+          return Center(
+            child: ListView.separated(
+              padding: const EdgeInsets.all(8),
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                Event ev=snapshot.data[index];
+                String evDate=ev.fromdate;
+                String formattedDate=evDate.substring(0,evDate.length);
+                return Container(
+                  height: 50,
+                  color: Colors.lightBlue[index],
+                  child: Center(
+                      child: ListTile(
+                        title: Text('${ev.eventname}'),
+                        leading: Icon(Icons.next_plan),
+                        subtitle:Text(formattedDate) ,
+                        onTap: (){
+                          //navigate to a new page to edit or delete
+                        },
+                      )
+                  ),
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) => const Divider(),
+            )
+          );
+        }
       ),
     );
   }

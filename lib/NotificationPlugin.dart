@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io' show File, Platform;
@@ -9,6 +10,7 @@ import 'package:tts_with_local_notif/DbConnect.dart';
 import 'package:tts_with_local_notif/model/Event.dart';
 class NotificationPlugin {
   //
+  DbConnect dbConnect=DbConnect.instance;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   final BehaviorSubject<ReceivedNotification>
   didReceivedLocalNotificationSubject =
@@ -147,46 +149,73 @@ class NotificationPlugin {
       payload: 'Test Payload',
     );
   }
+
+  FlutterTts flutterTts = FlutterTts();
+
+  Future _speak(String speechtext) async{
+    List<dynamic> languages = await flutterTts.getLanguages;
+    await flutterTts.setLanguage("en-US");
+    await flutterTts.setSpeechRate(1.0);
+    await flutterTts.setVolume(1.0);
+    await flutterTts.setPitch(1.0);
+
+    var result = await flutterTts.speak(speechtext);
+  }
+
   Future<void> scheduleNotification() async {
-    List<Event> wholeschedule=await DbConnect.instance.fetchEvents();
-    for(Event e in wholeschedule) {
-      String strtime=e.fromdate;
-      var scheduleNotificationDateTime =Event().stringToDatetime(strtime);
-      print("#####" + scheduleNotificationDateTime.toString());
-      var androidChannelSpecifics = AndroidNotificationDetails(
-        'CHANNEL_ID 1',
-        'CHANNEL_NAME 1',
-        "CHANNEL_DESCRIPTION 1",
-        icon: "@mipmap/logo_icon",
-        //sound: RawResourceAndroidNotificationSound('my_sound'),
-        largeIcon: DrawableResourceAndroidBitmap("@mipmap/logo_icon"),
-        enableLights: true,
-        color: const Color.fromARGB(255, 255, 0, 0),
-        ledColor: const Color.fromARGB(255, 255, 0, 0),
-        ledOnMs: 1000,
-        ledOffMs: 500,
-        importance: Importance.max,
-        priority: Priority.high,
-        playSound: true,
-        timeoutAfter: 5000,
-        styleInformation: DefaultStyleInformation(true, true),
-      );
-      var iosChannelSpecifics = IOSNotificationDetails(
-        sound: 'my_sound.aiff',
-      );
-      var platformChannelSpecifics = NotificationDetails(
-        android: androidChannelSpecifics,
-        iOS: iosChannelSpecifics,
-      );
-      await flutterLocalNotificationsPlugin.schedule(
-        0,
-        e.eventname,
-        e.fromdate,
-        scheduleNotificationDateTime,
-        platformChannelSpecifics,
-        payload: 'Test Payload',
-      );
-    }
+    List<Event> wholeschedule = await DbConnect.instance.fetchEvents();
+      for (Event e in wholeschedule) {
+        String strtime = e.fromdate;
+        var scheduleNotificationDateTime = Event.stringToDatetime(strtime);
+        print("#####" + scheduleNotificationDateTime.toString());
+        var androidChannelSpecifics = AndroidNotificationDetails(
+          'CHANNEL_ID 1',
+          'CHANNEL_NAME 1',
+          "CHANNEL_DESCRIPTION 1",
+          icon: "@mipmap/logo_icon",
+          //sound: RawResourceAndroidNotificationSound('my_sound'),
+          largeIcon: DrawableResourceAndroidBitmap("@mipmap/logo_icon"),
+          enableLights: true,
+          color: const Color.fromARGB(255, 255, 0, 0),
+          ledColor: const Color.fromARGB(255, 255, 0, 0),
+          ledOnMs: 1000,
+          ledOffMs: 500,
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+          timeoutAfter: 10000,
+          styleInformation: DefaultStyleInformation(true, true),
+        );
+        var iosChannelSpecifics = IOSNotificationDetails(
+          sound: 'my_sound.aiff',
+        );
+        var platformChannelSpecifics = NotificationDetails(
+          android: androidChannelSpecifics,
+          iOS: iosChannelSpecifics,
+        );
+
+        DateTime currenttime = DateTime.now();
+        if (currenttime.year == scheduleNotificationDateTime.year &&
+            currenttime.month == scheduleNotificationDateTime.month &&
+            currenttime.day == scheduleNotificationDateTime.day &&
+            currenttime.hour == scheduleNotificationDateTime.hour &&
+            currenttime.minute == scheduleNotificationDateTime.minute) {
+
+          await flutterLocalNotificationsPlugin.schedule(
+            0,
+            e.eventname,
+            e.fromdate,
+            scheduleNotificationDateTime,
+            platformChannelSpecifics,
+            payload: 'Talkative is Here!',
+          );
+          _speak(e.eventname);
+
+          if(e.repeat==1){
+            dbConnect.deleteEvent(e.id);
+          }
+        }
+      }
   }
   /*
    Future<void> scheduleNotification() async {
@@ -293,3 +322,7 @@ class ReceivedNotification {
     @required this.payload,
   });
 }
+
+
+
+

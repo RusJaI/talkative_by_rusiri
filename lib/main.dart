@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,8 +10,11 @@ import 'package:tts_with_local_notif/LocalNotificationScreen.dart';
 import 'NotificationPlugin.dart';
 import 'Schedule.dart';
 
- void main() {
-  runApp(MyApp());
+ void main(){
+   WidgetsFlutterBinding.ensureInitialized();
+   runApp(MyApp());
+   const oneMin = const Duration(seconds:58);
+   new Timer.periodic(oneMin, (Timer t) => notificationPlugin.scheduleNotification());
 }
 
 class MyApp extends StatelessWidget {
@@ -44,8 +48,8 @@ class MyApp extends StatelessWidget {
                 color: Colors.indigo[300]
             ),
               tabs: [
-                Tab(icon: Icon(Icons.calendar_today), text: "Calender"),
-                Tab(icon: Icon(Icons.message), text: "Schedule"),
+                Tab(icon: Icon(Icons.add), text: "Add New"),
+                Tab(icon: Icon(Icons.schedule), text: "Planned"),
                 //Tab(icon: Icon(Icons.settings), text: "Settings")
               ],
               ),
