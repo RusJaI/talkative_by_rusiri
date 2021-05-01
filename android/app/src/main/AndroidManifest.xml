@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
    <application
+       android:name=".Application"
         android:label="tts_with_local_notif"
         android:icon="@mipmap/logo_icon">
 
