@@ -8,23 +8,41 @@ import 'package:http/http.dart' as http;
 import 'package:rxdart/subjects.dart';
 import 'package:tts_with_local_notif/DbConnect.dart';
 import 'package:tts_with_local_notif/model/Event.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
 class NotificationPlugin {
   //
+
   DbConnect dbConnect=DbConnect.instance;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   final BehaviorSubject<ReceivedNotification>
   didReceivedLocalNotificationSubject =
   BehaviorSubject<ReceivedNotification>();
   var initializationSettings;
+
+  /////tts//////////////////////
+  FlutterTts flutterTts = FlutterTts();
+
+/////////////////tts///////////////////
   NotificationPlugin._() {
     init();
   }
   init() async {
+    tz.initializeTimeZones();
     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     if (Platform.isIOS) {
       _requestIOSPermission();
     }
     initializePlatformSpecifics();
+   ////tts flutter////////
+    List<dynamic> languages = await flutterTts.getLanguages;
+    await flutterTts.setLanguage("en-US");
+    await flutterTts.awaitSpeakCompletion(true);
+    await flutterTts.setSpeechRate(1.0);
+    await flutterTts.setVolume(1.0);
+    await flutterTts.setPitch(1.0);
+    /////tts flutter///////////////
   }
   initializePlatformSpecifics() {
     var initializationSettingsAndroid =
@@ -85,27 +103,7 @@ class NotificationPlugin {
       payload: 'New Payload',
     );
   }
-  Future<void> showDailyAtTime() async {
-    var time = Time(21, 3, 0);
-    var androidChannelSpecifics = AndroidNotificationDetails(
-      'CHANNEL_ID 4',
-      'CHANNEL_NAME 4',
-      "CHANNEL_DESCRIPTION 4",
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-    var iosChannelSpecifics = IOSNotificationDetails();
-    var platformChannelSpecifics =
-    NotificationDetails(android: androidChannelSpecifics, iOS: iosChannelSpecifics);
-    await flutterLocalNotificationsPlugin.showDailyAtTime(
-      0,
-      'Test Title at ${time.hour}:${time.minute}.${time.second}',
-      'Test Body', //null
-      time,
-      platformChannelSpecifics,
-      payload: 'Test Payload',
-    );
-  }
+
   Future<void> showWeeklyAtDayTime() async {
     var time = Time(21, 5, 0);
     var androidChannelSpecifics = AndroidNotificationDetails(
@@ -150,28 +148,109 @@ class NotificationPlugin {
     );
   }
 
-  FlutterTts flutterTts = FlutterTts();
 
   Future _speak(String speechtext) async{
-    List<dynamic> languages = await flutterTts.getLanguages;
-    await flutterTts.setLanguage("en-US");
-    await flutterTts.setSpeechRate(1.0);
-    await flutterTts.setVolume(1.0);
-    await flutterTts.setPitch(1.0);
 
     var result = await flutterTts.speak(speechtext);
+    await flutterTts.awaitSpeakCompletion(true);
   }
 
-  Future<void> scheduleNotification() async {
+
+  int channelno=0;
+
+  Future<void> makeNotified() async {
+    int i=0;
+    int j=200;
+    int k=400;
     List<Event> wholeschedule = await DbConnect.instance.fetchEvents();
-      for (Event e in wholeschedule) {
+    for (Event e in wholeschedule) {
+      String strtime = e.fromdate;
+      var scheduleNotificationDateTime = Event.stringToDatetime(strtime);
+      print("#####" + scheduleNotificationDateTime.toString());
+      DateTime currenttime = DateTime.now();
+      if (currenttime.hour == scheduleNotificationDateTime.hour &&
+          currenttime.minute == scheduleNotificationDateTime.minute) {
+        channelno++;
+
+        int freq = e.repeat;
+        if (freq == 1) {
+          scheduleNotification(e,j,channelno);
+        }
+        else if (freq == 0) {
+          showDailyAtTime(e,i,channelno);
+        }
+        else if (freq == 5) {
+          showWeekDaysOnly(e,k,channelno);
+        }
+      }
+    }
+  }
+
+
+  Future<void> showDailyAtTime(Event e,int num,int chnlno) async {
+    DateTime dt=Event.stringToDatetime(e.fromdate);
+    DateTime currenttime=DateTime.now();
+    DateTime scheduled=DateTime(currenttime.year,currenttime.month,currenttime.day,dt.hour,dt.minute);
+
+    var androidChannelSpecifics = AndroidNotificationDetails(
+      'CHANNEL_ID '+chnlno.toString(),
+      'CHANNEL_NAME '+chnlno.toString(),
+      "CHANNEL_DESCRIPTION "+chnlno.toString(),
+      importance: Importance.max,
+      priority: Priority.high,
+      enableVibration: true,
+      playSound: true,
+      icon: "@mipmap/logo_icon",
+      //sound: RawResourceAndroidNotificationSound('my_sound'),
+      largeIcon: DrawableResourceAndroidBitmap("@mipmap/logo_icon"),
+      enableLights: true,
+      color: const Color.fromARGB(255, 255, 0, 0),
+      ledColor: const Color.fromARGB(255, 255, 0, 0),
+      ledOnMs: 1000,
+      ledOffMs: 500,
+      //timeoutAfter: 10000,
+      styleInformation: DefaultStyleInformation(true, true),
+
+    );
+    var iosChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics =
+    NotificationDetails(android: androidChannelSpecifics, iOS: iosChannelSpecifics);
+    /*await flutterLocalNotificationsPlugin.showDailyAtTime(
+      chnlno,
+      e.eventname,
+      dt.hour.toString()+":"+dt.minute.toString(), //null
+      Time(dt.hour,dt.minute,DateTime.now().second),
+      platformChannelSpecifics,
+      payload: 'Talkative is here!',
+    );*/
+
+    await flutterLocalNotificationsPlugin.schedule(
+        chnlno,
+        e.eventname,
+        dt.hour.toString()+":"+dt.minute.toString(),
+        scheduled,
+        platformChannelSpecifics,
+        payload: 'Talkative is Here!',
+        androidAllowWhileIdle: true
+    );
+    _speak(e.eventname);
+  }
+
+  Future<void> scheduleNotification(Event e,int num,int chnlno) async {
+
         String strtime = e.fromdate;
         var scheduleNotificationDateTime = Event.stringToDatetime(strtime);
-        print("#####" + scheduleNotificationDateTime.toString());
+        print("##once###" + scheduleNotificationDateTime.toString());
+
+        DateTime currenttime = DateTime.now();
+        if (currenttime.year == scheduleNotificationDateTime.year &&
+            currenttime.month == scheduleNotificationDateTime.month &&
+            currenttime.day == scheduleNotificationDateTime.day) {
+        print("if passesd in once ");
         var androidChannelSpecifics = AndroidNotificationDetails(
-          'CHANNEL_ID 1',
-          'CHANNEL_NAME 1',
-          "CHANNEL_DESCRIPTION 1",
+          'CHANNEL_ID '+chnlno.toString(),
+          'CHANNEL_NAME '+chnlno.toString(),
+          "CHANNEL_DESCRIPTION "+chnlno.toString(),
           icon: "@mipmap/logo_icon",
           //sound: RawResourceAndroidNotificationSound('my_sound'),
           largeIcon: DrawableResourceAndroidBitmap("@mipmap/logo_icon"),
@@ -183,7 +262,7 @@ class NotificationPlugin {
           importance: Importance.max,
           priority: Priority.high,
           playSound: true,
-          timeoutAfter: 10000,
+          //timeoutAfter: 10000,
           styleInformation: DefaultStyleInformation(true, true),
         );
         var iosChannelSpecifics = IOSNotificationDetails(
@@ -194,28 +273,71 @@ class NotificationPlugin {
           iOS: iosChannelSpecifics,
         );
 
-        DateTime currenttime = DateTime.now();
-        if (currenttime.year == scheduleNotificationDateTime.year &&
-            currenttime.month == scheduleNotificationDateTime.month &&
-            currenttime.day == scheduleNotificationDateTime.day &&
-            currenttime.hour == scheduleNotificationDateTime.hour &&
-            currenttime.minute == scheduleNotificationDateTime.minute) {
-
           await flutterLocalNotificationsPlugin.schedule(
-            0,
+            chnlno,
             e.eventname,
             e.fromdate,
             scheduleNotificationDateTime,
             platformChannelSpecifics,
             payload: 'Talkative is Here!',
+            androidAllowWhileIdle: true
           );
+
           _speak(e.eventname);
 
-          if(e.repeat==1){
-            dbConnect.deleteEvent(e.id);
-          }
+          dbConnect.deleteEvent(e.id);
+
         }
+
+  }
+
+  Future<void> showWeekDaysOnly(Event e,int num,int chnlno) async {
+    DateTime currenttime = DateTime.now();
+    if (currenttime.weekday==1||currenttime.weekday==2||currenttime.weekday==3||currenttime.weekday==4||currenttime.weekday==5) {
+      String strtime = e.fromdate;
+      var scheduleNotificationDateTime = Event.stringToDatetime(strtime);
+      DateTime scheduled=DateTime(currenttime.year,currenttime.month,currenttime.day,scheduleNotificationDateTime.hour,scheduleNotificationDateTime.minute);
+      print("#####" + scheduleNotificationDateTime.toString());
+      var androidChannelSpecifics = AndroidNotificationDetails(
+        'CHANNEL_ID '+chnlno.toString(),
+        'CHANNEL_NAME '+chnlno.toString(),
+        "CHANNEL_DESCRIPTION "+chnlno.toString(),
+        icon: "@mipmap/logo_icon",
+        //sound: RawResourceAndroidNotificationSound('my_sound'),
+        largeIcon: DrawableResourceAndroidBitmap("@mipmap/logo_icon"),
+        enableLights: true,
+        color: const Color.fromARGB(255, 255, 0, 0),
+        ledColor: const Color.fromARGB(255, 255, 0, 0),
+        ledOnMs: 1000,
+        ledOffMs: 500,
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        //timeoutAfter: 10000,
+        styleInformation: DefaultStyleInformation(true, true),
+      );
+      var iosChannelSpecifics = IOSNotificationDetails(
+        sound: 'my_sound.aiff',
+      );
+      var platformChannelSpecifics = NotificationDetails(
+        android: androidChannelSpecifics,
+        iOS: iosChannelSpecifics,
+      );
+
+        await flutterLocalNotificationsPlugin.schedule(
+          num++,
+          e.eventname,
+          scheduleNotificationDateTime.hour.toString()+":"+scheduleNotificationDateTime.minute.toString(),
+          scheduled,
+          platformChannelSpecifics,
+          payload: 'Talkative is Here!',
+          androidAllowWhileIdle: true
+        );
+
+        _speak(e.eventname);
+
       }
+
   }
   /*
    Future<void> scheduleNotification() async {
@@ -326,3 +448,61 @@ class ReceivedNotification {
 
 
 
+/*
+    Future<void> scheduleNotification() async {
+    List<Event> wholeschedule = await DbConnect.instance.fetchEvents();
+      for (Event e in wholeschedule) {
+        String strtime = e.fromdate;
+        var scheduleNotificationDateTime = Event.stringToDatetime(strtime);
+        print("#####" + scheduleNotificationDateTime.toString());
+        var androidChannelSpecifics = AndroidNotificationDetails(
+          'CHANNEL_ID 1',
+          'CHANNEL_NAME 1',
+          "CHANNEL_DESCRIPTION 1",
+          icon: "@mipmap/logo_icon",
+          //sound: RawResourceAndroidNotificationSound('my_sound'),
+          largeIcon: DrawableResourceAndroidBitmap("@mipmap/logo_icon"),
+          enableLights: true,
+          color: const Color.fromARGB(255, 255, 0, 0),
+          ledColor: const Color.fromARGB(255, 255, 0, 0),
+          ledOnMs: 1000,
+          ledOffMs: 500,
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+          timeoutAfter: 10000,
+          styleInformation: DefaultStyleInformation(true, true),
+        );
+        var iosChannelSpecifics = IOSNotificationDetails(
+          sound: 'my_sound.aiff',
+        );
+        var platformChannelSpecifics = NotificationDetails(
+          android: androidChannelSpecifics,
+          iOS: iosChannelSpecifics,
+        );
+
+        DateTime currenttime = DateTime.now();
+        if (currenttime.year == scheduleNotificationDateTime.year &&
+            currenttime.month == scheduleNotificationDateTime.month &&
+            currenttime.day == scheduleNotificationDateTime.day &&
+            currenttime.hour == scheduleNotificationDateTime.hour &&
+            currenttime.minute == scheduleNotificationDateTime.minute) {
+
+          await flutterLocalNotificationsPlugin.schedule(
+            0,
+            e.eventname,
+            e.fromdate,
+            scheduleNotificationDateTime,
+            platformChannelSpecifics,
+            payload: 'Talkative is Here!',
+          );
+          _speak(e.eventname);
+
+          if(e.repeat==1){
+            dbConnect.deleteEvent(e.id);
+          }
+        }
+      }
+  }
+
+  */

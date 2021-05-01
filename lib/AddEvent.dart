@@ -21,10 +21,9 @@ class AddEventState extends State<AddEvent>{
   final int month;
   final int day;
   var fromdate;
-  var todate;
+  DateTime dtnow=DateTime.now();
   AddEventState({Key key, @required this.year,this.month,this.day}){
-    fromdate=DateTime(year,month,day).toString();
-    todate=DateTime(year,month,day).toString();
+    fromdate=DateTime(year,month,day,dtnow.hour,dtnow.minute).toString();
   }
 
   final eventnameController = TextEditingController();
@@ -34,15 +33,12 @@ class AddEventState extends State<AddEvent>{
 
   DbConnect dbConnect=DbConnect.instance;
 
-  String _selectedtype="allday";
   var _isButtonEnabled = false;
   bool notwholeday=false;
 
-  int repeat=1;
-
   bool is_successfullypushedtodb=false;
 
-  bool is_todatechanged=false;
+  String dropdownValue = "No Repeat-Only Once";
 
   ////////////////////////////////////////
   @override
@@ -54,7 +50,6 @@ class AddEventState extends State<AddEvent>{
 
   @override
   Widget build(BuildContext context) {
-    String dropdownValue = "No Repeat-Only Once";
 
     return Scaffold(
         appBar: AppBar(
@@ -105,7 +100,7 @@ class AddEventState extends State<AddEvent>{
                                   DateTimePicker(
                                     type: DateTimePickerType.dateTimeSeparate,
                                     dateMask: 'd MMM, yyyy',
-                                    initialValue: DateTime(year,month,day).toString(),
+                                    initialValue: fromdate.toString(),
                                     firstDate: DateTime(2000),
                                     lastDate: DateTime(2100),
                                     icon: Icon(Icons.event),
@@ -187,11 +182,10 @@ class AddEventState extends State<AddEvent>{
   }
 
   void addeventtodb(){
-    if(!is_todatechanged){
-      todate=DateTime.parse(fromdate).add(Duration(minutes: 1)).toString();
-    }
-     print("before insert : "+eventnameController.text+" "+fromdate+" "+todate+" "+repeat.toString());
-    Event event= new Event(eventname: eventnameController.text,fromdate: fromdate,todate: todate,repeat: repeat);
+    int drpdwn=Event.getIntValueofFrequency(dropdownValue);
+
+     print("before insert : "+eventnameController.text+" "+fromdate+" "+drpdwn.toString());
+    Event event= new Event(eventname: eventnameController.text,fromdate: fromdate,repeat: drpdwn);
     var val= dbConnect.addCalenderEvent(event);
     if(val!=null){//incorrect here..need to check whether val>0
       setState(() {

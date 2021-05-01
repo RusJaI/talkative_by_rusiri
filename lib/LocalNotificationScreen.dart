@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tts_with_local_notif/DbConnect.dart';
 import 'package:tts_with_local_notif/NotificationPlugin.dart';
+import 'package:tts_with_local_notif/UpdateEvent.dart';
 import 'package:tts_with_local_notif/model/Event.dart';
 
 class LocalNotificationScreen extends StatefulWidget{
@@ -30,32 +31,44 @@ class LocalNotificationScreen extends StatefulWidget{
       body: FutureBuilder(
         future: dbConnect.fetchEvents(),
         builder: (context, snapshot) {
-          return Center(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(8),
-              itemCount: snapshot.data.length,
-              itemBuilder: (BuildContext context, int index) {
-                Event ev=snapshot.data[index];
-                String evDate=ev.fromdate;
-                String formattedDate=evDate.substring(0,evDate.length);
-                return Container(
-                  height: 50,
-                  color: Colors.lightBlue[index],
-                  child: Center(
-                      child: ListTile(
-                        title: Text('${ev.eventname}'),
-                        leading: Icon(Icons.next_plan),
-                        subtitle:Text(formattedDate) ,
-                        onTap: (){
-                          //navigate to a new page to edit or delete
-                        },
-                      )
-                  ),
-                );
-              },
-              separatorBuilder: (BuildContext context, int index) => const Divider(),
-            )
-          );
+          if(!snapshot.hasData){
+            return Center(
+              child: Text("No upcoming tasks scheduled!"),
+            );
+          }else {
+            return Center(
+                child: ListView.separated(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: snapshot.data.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    Event ev = snapshot.data[index];
+                    String evDate = ev.fromdate;
+                    String formattedDate = evDate.substring(0, evDate.length);
+                    return Container(
+                      height: 50,
+                      color: Colors.lightBlue[index],
+                      child: Center(
+                          child: ListTile(
+                            title: Text('${ev.eventname}'),
+                            leading: Icon(Icons.next_plan),
+                            subtitle: Text(formattedDate),
+                            onTap: () {
+                              //navigate to a new page to edit or delete
+                              Navigator.push(context,
+                                  MaterialPageRoute(
+                                      builder: (context) => UpdateEvent(event: ev)
+                                  )
+                              );
+                            },
+                          )
+                      ),
+                    );
+                  },
+                  separatorBuilder: (BuildContext context,
+                      int index) => const Divider(),
+                )
+            );
+          }
         }
       ),
     );

@@ -34,7 +34,6 @@ class DbConnect{
         ${Event.col_id} INTEGER PRIMARY KEY AUTOINCREMENT,
         ${Event.col_event_name} TEXT NOT NULL,
         ${Event.col_from} TEXT NOT NULL,
-        ${Event.col_to} TEXT NOT NULL,
         ${Event.col_repeat} INTEGER NOT NULL
 
     )

@@ -28,7 +28,7 @@ android {
     compileSdkVersion 30
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // TODO: Specify your own unique com.rusj.tts_with_local_notif.Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.rusj.tts_with_local_notif"
         minSdkVersion 21
         targetSdkVersion 30

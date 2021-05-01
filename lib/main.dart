@@ -13,8 +13,8 @@ import 'Schedule.dart';
  void main(){
    WidgetsFlutterBinding.ensureInitialized();
    runApp(MyApp());
-   const oneMin = const Duration(seconds:58);
-   new Timer.periodic(oneMin, (Timer t) => notificationPlugin.scheduleNotification());
+   const oneMin = const Duration(seconds:40);
+   new Timer.periodic(oneMin, (Timer t) => notificationPlugin.makeNotified());
 }
 
 class MyApp extends StatelessWidget {
