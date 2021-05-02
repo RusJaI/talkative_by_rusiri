@@ -59,7 +59,9 @@ DateTime currtime=DateTime.now();
               child: Scaffold(
                   appBar: AppBar(
                     centerTitle: true,
-                    title: Text("Talkative"),
+                   // title: Text("Talkative"),
+                    title: new Image.asset(
+                    'assets/name.png', width: 170, height: 80),
 
                     //backgroundColor: Colors.transparent,
                     bottom: TabBar(

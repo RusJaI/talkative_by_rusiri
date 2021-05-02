@@ -35,14 +35,16 @@ class ScheduleState extends State<Schedule>{
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
           body: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
                 child: Container(
-                 // height: MediaQuery.of(context).size.height * 0.65,
+                  height: MediaQuery.of(context).size.height * 0.20,
                   child: TableCalendar(
-                    firstDay: DateTime.utc(2010, 10, 16),
+                    rowHeight:MediaQuery.of(context).size.height * 0.06 ,
+                    firstDay: DateTime.utc(2016, 10, 16),
                     lastDay: DateTime.utc(2030, 3, 14),
                     focusedDay: _selectedDay,
                     selectedDayPredicate: (day) {

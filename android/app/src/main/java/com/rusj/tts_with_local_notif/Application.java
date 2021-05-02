@@ -7,6 +7,7 @@ import com.tekartik.sqflite.SqflitePlugin;
 import com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsPlugin;
 import io.flutter.plugins.pathprovider.PathProviderPlugin;
 import io.flutter.plugins.deviceinfo.DeviceInfoPlugin;
+import com.tundralabs.fluttertts.FlutterTtsPlugin;
 
 @SuppressWarnings("deprecation")
 public class Application extends FlutterApplication
@@ -26,6 +27,6 @@ public class Application extends FlutterApplication
         FlutterLocalNotificationsPlugin.registerWith(registry.registrarFor("com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsPlugin"));
         SqflitePlugin.registerWith(registry.registrarFor("com.tekartik.sqflite.SqflitePlugin"));
         DeviceInfoPlugin.registerWith(registry.registrarFor("io.flutter.plugins.deviceinfo.DeviceInfoPlugin"));
-
+        FlutterTtsPlugin.registerWith(registry.registrarFor("com.tundralabs.fluttertts.FlutterTtsPlugin"));
     }
 }
