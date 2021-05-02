@@ -51,15 +51,18 @@ class DbConnect{
   Future<List<Event>> fetchEvents() async {
     Database db = await database;
     List<Map> events = await db.query(Event.tblEvents);
-    print("events : "+events.toString());
+    //print("events : "+events.toString());
     return events.length == 0
         ? []
         : events.map((x) => Event.fromMap(x)).toList();
   }
 
-  Future<List<Event>> fetchEventsWhenDbGiven(Database db) async {
-    List<Map> events = await db.query(Event.tblEvents);
-     print("events : "+events.toString());
+  Future<List<Event>> fetchEventsWhenFreqencyGiven(int frq) async {
+    Database db = await database;
+    String whereString = '${Event.col_repeat} = ?';
+    List<dynamic> whereArguments = [frq];
+    List<Map> events = await db.query(Event.tblEvents,where:whereString,whereArgs:whereArguments);
+    // print("events : "+events.toString());
     return events.length == 0
         ? []
         : events.map((x) => Event.fromMap(x)).toList();

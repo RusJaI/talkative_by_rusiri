@@ -60,6 +60,8 @@ class Event {
       return 5;
     }else if(value=="Repeat for WeekEnds"){
       return 2;
+    }else if(value=="All"){
+      return -1;
     }
   }
 

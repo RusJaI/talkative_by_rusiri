@@ -51,153 +51,160 @@ class UpdateEventState extends State<UpdateEvent>{
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-            title: Text("Edit/Delete Event")
-        ),
-        body: Container(
-          child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                Form(
-                  key: _formKey1,
-                  child: Container(
-                          constraints: BoxConstraints(maxHeight: 200),
-                          margin: EdgeInsets.only(left: 15.0,right: 15.0,top: 20.0,bottom: 10.0),
-                          child: TextFormField(
-                            // maxLines: 2,
-                            controller:eventnameController,
-                            autofocus: true,
-                            decoration: const InputDecoration(
-                              icon: const Icon(Icons.meeting_room),
-                              hintText: 'Event Description',
-                              // enabled: false,
-                            ),
-                            validator: (value) {
-
-                              if (value.isEmpty||value==null||value.trim()==""||value.trim()==null) {
-                                _isButtonEnabled = false;
-                                return 'Please Enter Valid Event Details';
-                              }
-                              /*  if(is_duplicating(value)){
-                                _isButtonEnabled = false;
-                                return 'You already have a class with this name.\nPlease enter valid class name';
-                              }*/
-
-                              _isButtonEnabled = true;
-                              return null;
-                            },
-                          ),
-                        ),
-                    ),
-
-                     Expanded(
-                       child: Column(
-                         children: [
-                        Container(
-                              child: Column(
-                                children: [
-                                  DateTimePicker(
-                                    type: DateTimePickerType.dateTimeSeparate,
-                                    dateMask: 'd MMM, yyyy',
-                                    initialValue: Event.stringToDatetime(event.fromdate).toString(),
-                                    firstDate: DateTime(2000),
-                                    lastDate: DateTime(2100),
-                                    icon: Icon(Icons.event),
-                                    dateLabelText: 'Date',
-                                    timeLabelText: "Time",
-                                    onChanged: (val) => {
-                                     // print(val),
-                                      this.setState(() {
-                                        fromdate=val;
-                                      })
-                                    },
-                                    validator: (val) {
-                                      //print(val);
-                                      return null;
-                                },
-                                //onSaved: (val) => print(val),
-                              ),
-                                 Container(
-                                   padding: EdgeInsets.only(left: 10.0,top: 20.0,right: 5.0,bottom: 5.0),
-                                   child: DropdownButton<String>(
-                                     value: dropdownValue,
-                                     icon: const Icon(Icons.arrow_downward),
-                                     iconSize: 34,
-                                     elevation: 26,
-                                     focusColor: Colors.lightBlue,
-                                     style: const TextStyle(
-                                         color: Colors.blueGrey,
-                                          fontSize: 20.0
-                                     ),
-                                     underline: Container(
-                                       height: 2,
-                                       color: Colors.indigo[900],
-                                     ),
-                                     onChanged: (String newValue) {
-                                       setState(() {
-                                         dropdownValue = newValue;
-                                       });
-                                     },
-                                     items: <String>['No Repeat-Only Once', 'Repeat Daily', 'Repeat for WeekDays']
-                                         .map<DropdownMenuItem<String>>((String value) {
-                                       return DropdownMenuItem<String>(
-                                         value: value,
-                                         child: Text(value),
-                                       );
-                                     }).toList(),
-                                   ),
-                                 ),
-
-                        Container(
-                          child: FloatingActionButton.extended(
-                            label: Text("Save"),
-                            onPressed:()=>{
-                              if (_formKey1.currentState.validate()) {
-                                updateeventtodb(),
-                                Navigator.pop(context),
-                                Navigator.push(context,
-                                    MaterialPageRoute(
-                                        builder: (context) => MyApp()
-                                    )
-                                ),
-                               // _showToast(_scaffoldKey.currentContext),
-                              },
-                            },
-                            heroTag: "btn4",
-                          ),
-                          padding: EdgeInsets.only(top:20.0),
-                        ),
-                           Container(
-                             child: FloatingActionButton.extended(
-                               label: Text("Delete Task"),
-                               backgroundColor: Colors.red,
-                               onPressed:()=>{
-                                 dbConnect.deleteEvent(event.id),
-                                   Navigator.pop(context),
-                                   Navigator.push(context,
-                                       MaterialPageRoute(
-                                           builder: (context) => MyApp()
-                                       )
-                                   ),
-                                   // _showToast(_scaffoldKey.currentContext),
-                               },
-                               heroTag: "btnDelete",
-                             ),
-                             padding: EdgeInsets.only(top:25.0),
-                           ),
-
-                                ],
-                              ),
-                          //padding: EdgeInsets.only(left: 8.0,right: 8.0,top: 20.0,bottom: 40.0),
-                          padding: EdgeInsets.only(left: 8.0,right: 8.0,),
-                        ),
-                         ],
-                       ),
-                     ),
-              ]
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+          appBar: AppBar(
+              title: Text("Edit/Delete Event"),
+              leading: new IconButton(
+                icon: new Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).pop(),
+              )
           ),
-        ),
+          body: Container(
+            child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  Form(
+                    key: _formKey1,
+                    child: Container(
+                            constraints: BoxConstraints(maxHeight: 200),
+                            margin: EdgeInsets.only(left: 15.0,right: 15.0,top: 20.0,bottom: 10.0),
+                            child: TextFormField(
+                              // maxLines: 2,
+                              controller:eventnameController,
+                              autofocus: true,
+                              decoration: const InputDecoration(
+                                icon: const Icon(Icons.meeting_room),
+                                hintText: 'Event Description',
+                                // enabled: false,
+                              ),
+                              validator: (value) {
+
+                                if (value.isEmpty||value==null||value.trim()==""||value.trim()==null) {
+                                  _isButtonEnabled = false;
+                                  return 'Please Enter Valid Event Details';
+                                }
+                                /*  if(is_duplicating(value)){
+                                  _isButtonEnabled = false;
+                                  return 'You already have a class with this name.\nPlease enter valid class name';
+                                }*/
+
+                                _isButtonEnabled = true;
+                                return null;
+                              },
+                            ),
+                          ),
+                      ),
+
+                       Expanded(
+                         child: Column(
+                           children: [
+                          Container(
+                                child: Column(
+                                  children: [
+                                    DateTimePicker(
+                                      type: DateTimePickerType.dateTimeSeparate,
+                                      dateMask: 'd MMM, yyyy',
+                                      initialValue: Event.stringToDatetime(event.fromdate).toString(),
+                                      firstDate: DateTime(2000),
+                                      lastDate: DateTime(2100),
+                                      icon: Icon(Icons.event),
+                                      dateLabelText: 'Date',
+                                      timeLabelText: "Time",
+                                      onChanged: (val) => {
+                                       // print(val),
+                                        this.setState(() {
+                                          fromdate=val;
+                                        })
+                                      },
+                                      validator: (val) {
+                                        //print(val);
+                                        return null;
+                                  },
+                                  //onSaved: (val) => print(val),
+                                ),
+                                   Container(
+                                     padding: EdgeInsets.only(left: 10.0,top: 20.0,right: 5.0,bottom: 5.0),
+                                     child: DropdownButton<String>(
+                                       value: dropdownValue,
+                                       icon: const Icon(Icons.arrow_downward),
+                                       iconSize: 34,
+                                       elevation: 26,
+                                       focusColor: Colors.lightBlue,
+                                       style: const TextStyle(
+                                           color: Colors.blueGrey,
+                                            fontSize: 20.0
+                                       ),
+                                       underline: Container(
+                                         height: 2,
+                                         color: Colors.indigo[900],
+                                       ),
+                                       onChanged: (String newValue) {
+                                         setState(() {
+                                           dropdownValue = newValue;
+                                         });
+                                       },
+                                       items: <String>['No Repeat-Only Once', 'Repeat Daily', 'Repeat for WeekDays']
+                                           .map<DropdownMenuItem<String>>((String value) {
+                                         return DropdownMenuItem<String>(
+                                           value: value,
+                                           child: Text(value),
+                                         );
+                                       }).toList(),
+                                     ),
+                                   ),
+
+                          Container(
+                            child: FloatingActionButton.extended(
+                              label: Text("Save"),
+                              onPressed:()=>{
+                                if (_formKey1.currentState.validate()) {
+                                  updateeventtodb(),
+                                  Navigator.pop(context),
+                                  Navigator.push(context,
+                                      MaterialPageRoute(
+                                          builder: (context) => MyApp()
+                                      )
+                                  ),
+                                 // _showToast(_scaffoldKey.currentContext),
+                                },
+                              },
+                              heroTag: "btn4",
+                            ),
+                            padding: EdgeInsets.only(top:20.0),
+                          ),
+                             Container(
+                               child: FloatingActionButton.extended(
+                                 label: Text("Delete Task"),
+                                 backgroundColor: Colors.red,
+                                 onPressed:()=>{
+                                   dbConnect.deleteEvent(event.id),
+                                     Navigator.pop(context),
+                                     Navigator.push(context,
+                                         MaterialPageRoute(
+                                             builder: (context) => MyApp()
+                                         )
+                                     ),
+                                     // _showToast(_scaffoldKey.currentContext),
+                                 },
+                                 heroTag: "btnDelete",
+                               ),
+                               padding: EdgeInsets.only(top:25.0),
+                             ),
+
+                                  ],
+                                ),
+                            //padding: EdgeInsets.only(left: 8.0,right: 8.0,top: 20.0,bottom: 40.0),
+                            padding: EdgeInsets.only(left: 8.0,right: 8.0,),
+                          ),
+                           ],
+                         ),
+                       ),
+                ]
+            ),
+          ),
+      ),
     );
   }
 
