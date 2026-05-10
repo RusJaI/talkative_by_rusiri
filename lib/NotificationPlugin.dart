@@ -178,7 +178,8 @@ class NotificationPlugin {
   }
 
   Future<void> showDailyAtTime() async {
-    const time = Time(21, 3, 0);
+    const int hour = 21;
+    const int minute = 3;
     const androidChannelSpecifics = AndroidNotificationDetails(
       'CHANNEL_ID_4',
       'Daily Notifications',
@@ -195,14 +196,14 @@ class NotificationPlugin {
     // showDailyAtTime is deprecated; use zonedSchedule with matchDateTimeComponents
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(
-        tz.local, now.year, now.month, now.day, time.hour, time.minute);
+        tz.local, now.year, now.month, now.day, hour, minute);
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
     await flutterLocalNotificationsPlugin.zonedSchedule(
       0,
-      'Daily Notification at ${time.hour}:${time.minute}',
+      'Daily Notification at $hour:$minute',
       'Test Body',
       scheduledDate,
       platformChannelSpecifics,
